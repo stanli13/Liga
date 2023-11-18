@@ -1,0 +1,1442 @@
+openapi: 3.0.0
+info:
+  title:  Система стажировки 
+  version: 1.0.13.111223
+tags:
+  - name: Аутентификация 
+    description: API аутентификация
+  - name: Стажировка 
+    description: API стажировки
+  - name: Участники
+    description: API участников стажировки
+  - name: Сотрудники Лиги
+    description: API  сотрудников лиги
+  - name: Лендинг
+    description: API лендинга 
+  - name: Заявки
+    description: API лендинга  
+  - name: Лекция 
+    description: API лекции
+  - name: Роли пользователей
+    description: API ролей пользователей
+  - name: Домашнее задание
+    description: API ролей пользователей
+
+paths:
+  /authentication:
+   post:
+      tags:
+        - Аутентификация
+      summary: Получение токена доступа к сервису
+      operationId: poatAuthentication
+      requestBody:
+        description: Данные пользователя
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Authentication'
+      responses:
+        '201':
+          description: Создание стажировки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responsesAuthentication'
+        '400':
+          description: Неверный ввод
+        '500':
+          description: Ошибка сервера
+    
+
+  /internships:
+    get:
+      tags:
+        - Стажировка 
+      summary: Получение списка стажировок
+      description: Возвращает список всех доступных стажировок
+      operationId: getInternship
+      security:
+        - Authorization: []
+      parameters:
+        - name: status_id
+          in: query
+          description: индентиифкатор статуса 
+          required: false  
+          schema:
+            type: integer
+# решил брать из токена на BE
+#        - name: mobile
+#          in: query
+#          description: телефон 
+#          schema:
+#            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Internship'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+  
+    post:
+      tags:
+        - Стажировка 
+      summary: Создание новой стажировки
+      operationId: createInternship
+      security:
+        - Authorization: []
+      requestBody:
+        description: Данные стажировки
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+               - name
+               - brand
+              properties:
+                name:
+                  type: string
+                  description: Имя стажировки
+                head:
+                  $ref: '#/components/schemas/LigaUser' 
+  
+      responses:
+        '201':
+          description: Создание стажировки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Internship'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+  
+  /internships/{id}:
+    get:
+      tags:
+        - Стажировка 
+      summary: Получение информации по опрелеленной стажировке
+      description: Возвращает информацию о стажировке по указанному идентификатору
+      operationId: getInternships
+      security:
+        - Authorization: []
+      parameters:
+        - name: id
+          in: path
+          description: Идентификатор стажировки
+          required: true
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Internship'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+    put:
+      tags:
+        - Стажировка
+      summary: Обновление информации о стажировке
+      operationId: updateInternship
+      security:
+        - Authorization: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID стажировки, которую нужно обновить
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        description: Данные стажировки для обновления
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Internship'       
+      responses:
+        '200':
+          description: Стажировка обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Internship'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+    patch:
+      tags:
+        - Стажировка
+      summary: Обновление информации о стажировке
+      security:
+        - Authorization: []      
+      parameters:
+        - name: id
+          in: path
+          description: ID стажировки
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Internship'
+      responses:
+        '200':
+          description: Стажировка успешно обновлена
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+#  /internships/{internship_id}/lessons:
+#    get:
+#      summary: Получить список лекций в стажировке
+#      security:
+#       - Authorization: []
+#      tags:
+#        - Стажировка
+#      parameters:
+#        - name: internship_id
+#          in: path
+#          description: ID стажировки
+#          required: true
+#          schema:
+#            type: integer
+#            format: int64
+#      responses:
+#        '200':
+#          description: Успешный ответ
+#          content:
+#            application/json:
+#              schema:
+#                type: array
+#                items:
+#                  $ref: '#/components/schemas/Lesson'
+#                  
+#        '404':
+#          description: Стажировка не найдена
+#        '401':
+#          description: Не авторизован           
+#        '500':
+#          description: Ошибка сервера  
+ 
+  /users:
+    get:
+      tags:
+        - Участники
+      summary: Получение списка учатстников стажировки
+      description: Возвращает список всех сотрудников лиги
+      operationId: getLigaUsers
+      security:
+        - Authorization: []
+      parameters: 
+        - name: internship_id
+          in: query
+          description: Идентификатор стажировки
+          schema:
+            type: integer
+            format: int64
+#        - name: mobile
+ #         in: query
+ #         description: Идентификатор стажировки
+ #         schema:
+  #          type: integer
+  #          format: int64    
+        - name: id_role
+          in: query
+          description: id роли
+          schema:
+            type: integer
+            format: int64    
+        - name: mobile
+          in: query
+          description: телефон
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+
+  /users/{id}: 
+    patch:
+      tags:
+        - Участники
+      summary: Изменение информации об участнике
+      description: Изменяет определенную информацию по id
+      operationId: patchLigaUsers
+      security:
+        - Authorization: []
+      parameters:
+        - name: id
+          in: path
+          description: ID стажировки
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:      
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Успешный ответ
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+ 
+ 
+ 
+  /liga_users:
+    get:
+      tags:
+        - Сотрудники Лиги
+      summary: Получение списка сотрудников лиги
+      description: Возвращает список всех участников
+      operationId: getUsers
+      security:
+        - Authorization: []
+  
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LigaUser'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+          
+  /landings: 
+   post:
+      tags:
+        - Лендинг
+      summary: Создание нового лендинга
+      operationId: createLanding
+      security:
+        - Authorization: []
+      requestBody:
+        description: Данные лендинга
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Landing'
+      responses:
+        '201':
+          description: Создание стажировки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Landing'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+  
+  /landings/{internship_id}:
+   get:
+    tags:
+      - Лендинг
+    summary: Получение информации о лендинге
+    operationId: getLanding
+    parameters:
+      - name: internship_id
+        in: path
+        description: Идентификатор стажировки
+        required: true
+        schema:
+          type: integer
+    responses:
+      '200':
+        description: Успешное получение информации о лендинге
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Landing'
+      '400':
+        description: Ошибка запроса
+      '500':
+        description: Ошибка сервера
+        
+   put:
+    tags:
+      - Лендинг
+    summary: Обновление существующего лендинга
+    operationId: updateLanding
+    security:
+      - Authorization: []
+    parameters:
+      - name: internship_id
+        in: path
+        description: Идентификатор лендинга
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      description: Данные для обновления лендинга
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Landing'
+    responses:
+      '200':
+        description: Успешное обновление лендинга
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Landing'
+      '400':
+        description: Ошибка запроса
+      '401':
+        description: Ошибка авторизации
+      '500':
+        description: Ошибка сервера
+ 
+ 
+ 
+  /applications:
+    post:
+      tags:
+      - Заявки
+      summary: Создание новой заявки
+      operationId: createApplication
+      requestBody:
+        description: Данные новой заявки
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+      responses:
+        '201':
+          description: Успешное создание заявки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          description: Ошибка запроса
+        '500':
+          description: Ошибка сервера
+    get:
+      tags:
+      - Заявки    
+      summary: Получение списка заявок
+      operationId: getApplications
+      security:
+        - Authorization: []
+      parameters: 
+        - name: internship_id
+          in: query
+          description: Идентификатор стажировки
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: status_id
+          in: query
+          description: Идентификатор стажировки
+          schema:
+            type: integer
+            format: int64    
+        - name: passed
+          in: query
+          description: Статус принят или отклонен Руководителем стажировки
+          schema:
+            type: boolean
+
+      responses:
+        '200':
+          description: Успешное получение списка заявок
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Application'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+  /applications/{id}:
+    get:
+      tags:
+      - Заявки    
+      summary: Получение информации о заявке
+      operationId: getApplication
+      security:
+        - Authorization: []
+      parameters:
+        - name: id
+          in: path
+          description: Идентификатор заявки
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешное получение информации о заявке
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+    patch:
+      tags:
+      - Заявки    
+      summary: Обновление существующей заявки
+      operationId: updateApplication
+      security:
+        - Authorization: []
+      parameters:
+        - name: id
+          in: path
+          description: Идентификатор заявки
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Данные для обновления заявки
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+      responses:
+        '200':
+          description: Успешное обновление заявки
+
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+ 
+ 
+  /user_roles:
+    post:
+      tags:
+        - Роли пользователей
+      summary: Назначить роль пользователю
+      #operationId: assignSupervisor
+      security:
+        - Authorization: []      
+      requestBody:
+        description: Данные пользователя
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                internship_id:
+                  type: integer
+                  description: id стажировки
+                role_id:
+                  type: integer
+                  description: id роли  
+                mentor:
+                 type: array
+                 items:
+                   $ref: '#/components/schemas/LigaUser' 
+ 
+              
+      responses:
+        '201':
+          description: Руководитель назначен
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+    get:
+      tags:
+        - Роли пользователей
+      security:
+        - Authorization: []             
+      summary: Получить информацию о назвначении по (роли, пользователю, стажировке или ментору)
+      operationId: getRoleInfo
+      parameters:
+   #     - name: user_id
+  #        in: query
+  #        description: ID пользователя, для которого нужно получить стажировку, роль или ментора, если это стажер.
+  #        required: false
+  #        schema:
+  #          type: integer
+  #          format: int32
+        - name: role_id
+          in: query
+          description: ID роли, для которой нужно получить всех пользователей 
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: internship_id
+          in: query
+          description: ID стажировки, для которой нужно получить стажеровдля которой нужно получить всех пользователей и их роли
+          schema:
+            type: integer
+            format: int32
+  #      - name: mentor_id
+  #        in: query
+  #        description: ID ментора, для которой нужно получить всех пользователей и их роли
+  #        required: false
+  #        schema:
+  #          type: integer
+  #          format: int32            
+      responses:
+        '200':
+          description: Информация о ролях получена
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserRole'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+
+  
+  /lessons:
+    post:
+      tags:
+        - Лекция
+      summary: Создать новую лекцию
+      operationId: createLesson
+      security:
+        - Authorization: []      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lesson'
+      responses:
+        '201':
+          description: Лекция успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+    
+    get:
+      tags:
+        - Лекция
+      summary: Получение списка лекций 
+      operationId: getLesson
+      security:
+        - Authorization: []     
+      parameters:
+
+        - name: internship_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+#        - name: mobile
+#          in: query
+#          schema:
+#            type: integer
+#            example: 79000000000
+#            format: int64    
+
+#        - name: date
+#          in: query
+#          schema:
+#            type: string
+#            format: date
+
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Lesson'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера   
+  /lessons/{id}:
+    get:
+      tags:
+        - Лекция    
+      summary: Получить информацию о лекции по ID
+      security:
+        - Authorization: []      
+      parameters:
+        - name: id
+          in: path
+          description: ID лекции
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+  
+    patch:
+      tags:
+        - Лекция   
+      security:
+        - Authorization: []       
+      summary: Обновить лекцию
+      parameters:
+        - name: id
+          in: path
+          description: ID лекции
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lesson'
+      responses:
+        '200':
+          description: Лекция успешно обновлена
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+  
+#  /lessons/findByInternship:
+#    get:
+#      tags:
+#        - Лекция  
+#      security:
+#        - Authorization: []             
+#      summary: Получить список лекций по стажировке
+#      parameters:
+#        - name: internship_id
+#          in: query
+#          description: ID стажировки
+#          required: true
+#          schema:
+#            type: integer
+#            format: int64
+#      responses:
+#        '200':
+#          description: Успешный ответ
+ #         content:
+  #          application/json:
+   #           schema:
+    #            type: array
+     #           items:
+      #            $ref: '#/components/schemas/Lesson'
+       # '404':
+        #  description: Стажировка не найдена
+#        '500':
+ #         description: Ошибка сервера
+  
+#  /lessons/findByStatus:
+ #   get:
+  #    summary: Получить список лекций по статусу
+ #     tags:
+  #      - Лекция 
+   #   security:
+    #    - Authorization: []        
+     # parameters:
+#        - name: status_id
+ #         in: query
+  #        description: Статус лекции
+   #       required: true
+    #      schema:
+     #       type: integer
+      #      format: int32
+#      responses:
+ #       '200':
+  #        description: Успешный ответ
+   #       content:
+    #        application/json:
+     #         schema:
+      #          type: array
+       #         items:
+        #          $ref: '#/components/schemas/Lesson'
+#        '404':
+ #         description: Лекции с указанным статусом не найдены
+  #      '500':
+   #       description: Ошибка сервера 
+#  /lessons/findByDate:
+ #   get:
+#      summary: Получить список лекций по дате
+#      tags:
+#        - Лекция 
+#      security:
+#        - Authorization: []             
+#      parameters:
+#        - name: date
+#          example: 2023-11-19
+ #         in: query
+  #        description: Дата лекции
+   #       required: true
+    #      schema:
+     #       type: integer
+      #      format: int32
+#      responses:
+ #       '200':
+  #        description: Успешный ответ
+   #       content:
+    #        application/json:
+     #         schema:
+      #          type: array
+       #         items:
+        #          $ref: '#/components/schemas/Lesson'
+#        '404':
+ #         description: Лекции с указанной датой не найдены
+  #      '500':
+   #       description: Ошибка сервера
+  
+  /home_works:
+    post:
+      tags:
+        - Домашнее задание
+      security:
+        - Authorization: []  
+      summary: Создать новое домашнее задание
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HomeWork'
+      responses:
+        '201':
+          description: Домашнее задание успешно создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeWork'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+
+    get:
+      tags:
+        - Домашнее задание
+      summary: Ролучить список домашних заданий
+      description: Возвращает список домашних заданий
+      operationId: getHomeWork
+      security:
+        - Authorization: []
+      parameters: 
+        - name: internship_id
+          in: query
+          description: Идентификатор стажировки
+          required: true          
+          schema:
+            type: integer
+            format: int64
+        - name: status_id
+          in: query
+          description: id пользователя 
+          schema:
+            type: integer
+            format: int64    
+             
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HomeWork'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+
+  /home_works/{id}:
+    get:
+      tags:
+        - Домашнее задание
+      security:
+        - Authorization: []     
+      summary: Получить домашнее задание по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeWork'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера
+
+    patch:
+      tags:
+        - Домашнее задание
+      security:
+        - Authorization: []      
+      summary: Обновить домашнее задание по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HomeWork'
+      responses:
+        '200':
+          description: Домашнее задание успешно обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeWork'
+        '400':
+          description: Ошибка запроса
+        '401':
+          description: Ошибка авторизации
+        '500':
+          description: Ошибка сервера  
+components:
+  securitySchemes:
+    Authorization:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+
+    Internship:
+      type: object
+      required:
+        - name
+        - head_id
+      properties:
+        id:
+          type: integer
+          description: Идентификатор стажировки
+        name:
+          type: string
+          description: Название стажировки
+        head_id:
+          type: integer
+          description: Идентификатор руководителя
+        status_id:
+          type: integer
+          description: Идентификатор статуса стажировки
+
+    Landing:
+      type: object
+      required:
+        - template
+        - intership_id
+        - title
+        - preview
+        - test_task
+        - link
+        - schedule
+      properties:
+        intership_id:
+          type: integer
+          description: Идентификатор лекции          
+        template:
+          type: integer
+          description: Номер шаблона
+          enum:
+            - 1
+            - 2 
+        title:
+          type: string
+          description: Заголовок
+        preview:
+          type: string
+          description: Анонс
+        description:
+          type: string
+          description: Описание
+        test_task:
+          type: string
+          description: тестовое задание
+        link:
+          type: string
+          description: Доменный адрес
+        name1:
+          type: string
+          description: Имя дополнительного поля 1
+        name2:
+          type: string
+          description: Имя дополнительного поля 2
+        name3:
+          type: string
+          description: Имя дополнительного поля 3  
+        active1:
+          type: boolean
+          description: Статус акивированности дополнительного поля 1   
+        active2:
+          type: boolean
+          description: Статус акивированности дополнительного поля 2    
+        active3:
+          type: boolean
+          description: Статус акивированности дополнительного поля 3              
+        schedule:
+          type: array
+          items:
+            $ref: '#/components/schemas/LessonLanding'
+        files:   
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+        
+    LessonLanding:
+      type: object
+      required:
+#      - id_intership
+      - name
+      - time
+      - date
+      properties:
+#        id_intership:
+#          type: integer
+#          description: Идентификатор лекции
+        id:
+          type: integer
+          description: Идентификатор лекции
+        name:
+          type: string
+          description: Имя лекции
+        time:
+          type: string
+          description: Время лекции
+        date:
+          type: string
+          description: Дата лекции
+    File:
+      type: object
+      required:
+        - name
+        - file_base64
+      properties:
+        id:
+          type: integer
+          description: Идентификатор файла
+        name:
+          type: string
+          description: Имя файла
+        file_base64:
+          type: string
+          description: Кодированный файл
+        type:
+          type: string
+          description: Тип файла  
+     
+    Application:
+      type: object
+      required:
+        - name
+        - surname
+        - middle_name
+        - date
+        - address
+        - mobile
+        - email
+        - test_task
+        - resum
+        - internship_id
+      properties:
+        id:
+          type: integer
+          description: Идентификатор заявки
+        internship_id:
+          type: integer
+          description: Идентификатор заявки  
+        name:
+          type: string
+          description: Имя 
+        surname:
+          type: string
+          description: Фамилия
+        middle_name:
+          type: string
+          description: Очество        
+        date:
+          type: string
+          description: Дата рождения
+        address:
+          type: string
+          description: Адрес
+        mobile:
+          type: string
+          description: Телефон
+        email:
+          type: string
+          description: Email
+        test_task:
+          type: string
+          description: Ссылка на тестовое задание     
+        resume:
+          type: string
+          description: Ссылка на резюме           
+        extra_field1:
+          type: string
+          description: Дополнительное поле 1     
+        extra_field2:
+          type: string
+          description: Дополнительное поле 2     
+        extra_field3:
+          type: string
+          description: Дополнительное поле 3       
+        status_id:
+          type: integer
+          description: индентификатор статуса         
+        passed:
+          type: boolean
+          description: принят или отклонен
+        comment:
+          type: string
+          description: Комментарий СБ        
+ 
+  
+    UserRole:
+      type: object
+      required:
+        - internship_id
+        - user_id
+        - role_id
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: ID записи в таблице user_role
+        internship_id:
+          type: integer
+          format: int32
+          description: ID стажировки
+        user_id:
+          type: integer
+          format: int32
+          description: ID пользователя
+        role_id:
+          type: integer
+          format: int32
+          description: ID роли 
+        mentor_id:
+          type: integer
+          format: int32
+          description: ID ментора
+    Lesson:
+      type: object
+      required:
+        - internship_id
+        - name
+        - date
+        - time
+        - link
+      properties:
+        id:
+          type: integer
+          format: int32
+        internship_id:
+          type: integer
+          format: int32
+        name:
+          type: string
+          format: int32 
+        date:
+          type: string
+          example: 2023-11-19
+        time:
+          type: string
+          example: 22:34:22
+        description_meeting:
+          type: string  
+        link:
+          type: string
+        description_lesson:
+          type: string  
+        status_id:
+          type: integer  
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/LessonUser'  
+        files:   
+          type: array
+          items:
+            $ref: '#/components/schemas/File'            
+    HomeWork:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        lesson_id:
+          type: integer
+          format: int64
+        task:
+          type: string
+        answer:
+          type: string
+        comment:
+          type: string
+        mark:
+          type: integer
+          format: int32
+        status_id:
+          type: integer
+          format: int64
+        employed:
+          type: boolean
+          description: активировано или нет          
+        name_lesson:
+          type: string
+        mentore_id:
+          type: integer
+          format: int64
+        intern_id:
+          type: integer
+          format: int64    
+        internship_id:
+          type: integer
+          format: int32   
+        files:   
+          type: array
+          items:
+            $ref: '#/components/schemas/File'                     
+
+    User: 
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: ID записи в таблице user
+        s_name:
+          type: string
+          description: Фамилия
+        f_name:
+          type: string
+          description: Имя
+        m_name:
+          type: string
+          description: Очество
+        department:
+          type: string
+          description: Отдел
+        position:
+          type: string
+          description: Должность 
+        role_id:  
+          type: integer
+          format: int32
+          description: id role
+        internship_activ_id:
+          type: integer
+          format: int32
+          description: id активных стажировок
+        internship_name:
+          type: integer
+          format: int32
+          description: id internship  
+        employed:
+          type: boolean
+          description: трудоустроен или нет 
+        comment:
+          type: string
+          description: Должность           
+# используются на фронте?
+#       id_users:
+#          type: integer
+#          format: int32
+#          description: ID записи в таблице во нешней users        
+#        id_integration:
+#          type: integer
+#          format: int32
+#          description: ID записи в таблице во нешней users            
+    LigaUser: 
+      type: object
+      required:
+        - id
+        - s_name
+        - f_name
+        - m_name
+        - mobile
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: ID записи в таблице users
+        s_name:
+          type: string
+          description: Фамилия
+        f_name:
+          type: string
+          description: Имя
+        m_name:
+          type: string
+          description: Отчество
+        department:
+          type: string
+          description: Отдел
+        position:
+          type: string
+          description: Должность  
+        mobile:
+          type: string
+          description: Должность  
+    
+    LessonUser:     
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: ID записи в таблице users
+   
+    Authentication:     
+      type: object
+      required:
+        - login
+        - password
+      properties:
+        login:
+          type: string
+          description: Логин 
+        password:
+          type: string
+          description: Пароль       
+       
+    responsesAuthentication:     
+      type: object
+      required:
+       - token
+       - expires_in
+       - token_type
+       - role_id
+      properties:
+        token:
+          type: string
+          description: Токен 
+        expires_in:
+          type: string
+          description: Срок   
+        token_type:
+          type: string
+          description: Тип токена
+        role_id:
+          type: integer
+          format: int32
+          description: Ролль пользователя           
+          
+    
